@@ -89,19 +89,21 @@ public class ShortestPaths {
 	
     	//CODE BEGINS
     	while(!pq.isEmpty()) {
-    		VertexAndDist current = pq.extractMin().getElement(); //get minimum vertex from priority queue
+    		VertexAndDist current = pq.extractMin().getElement(); //get vertex with minimum distance from priority queue
     		Iterable<Edge> outgoing = current.getVertex().edgesFrom();
     		for(Edge e : outgoing) { //iterate through outgoing edges of minimum vertex
-    			Vertex adj = e.to; //get adjacent vertex
+    			Vertex adj = e.to; //get vertex adjacent to current edge
+
     			PQEntry<VertexAndDist, Integer> adjHandle = handles.get(adj);
-    			VertexAndDist adjAndDist = adjHandle.getElement();
-    			
-    			int adjDist = adjAndDist.getDistance(); //get distance of vertex
-    			int newDist = current.getDistance() + weights.get(e); //calculate current vertex + edge weight
-    			if(newDist < adjDist) { //relax if appropriate
-    				adjAndDist.setDistance(newDist); //update distance
-    				parentEdges.put(adj, e); //update parent edge
-    				adjHandle.updatePriority(newDist);
+    			VertexAndDist adjAndDist = adjHandle.getElement(); 
+    			int adjDist = adjAndDist.getDistance(); // get adjacent vertex's distance through handle
+
+    			int newDist = current.getDistance() + weights.get(e); //calculate current vertex's distance + weight of edge going to the adjacent vertex
+    			if(newDist < adjDist) { //if the newly calculated distance is less than the adjacent vertex's current distance,
+										//update the adjacent vertex's distance to new distance and parent edge to current edge
+    				adjAndDist.setDistance(newDist);
+    				parentEdges.put(adj, e);
+    				adjHandle.updatePriority(newDist); //update the priority of the adjacent vertex so it can be correctly recognized by the pq
     			} 			
     		}
     	//CODE ENDS
@@ -121,10 +123,11 @@ public class ShortestPaths {
     public LinkedList<Edge> returnPath(Vertex endVertex) {
     	LinkedList<Edge> path = new LinkedList<Edge>();
         //CODE BEGINS
-    	Vertex v = endVertex;
-    	while(parentEdges.get(v) != null) {
+    	Vertex v = endVertex; //start at the ending vertex
+    	while(parentEdges.get(v) != null) { //continue to iterate through the parent edges and add them to the path
+											//in reverse order until we reach the starting vertex with a null parent edge
     		path.addFirst(parentEdges.get(v));
-    		v = parentEdges.get(v).from;
+    		v = parentEdges.get(v).from; //update the current vertex by following the parent edge
     	}
     	return path;
         //CODE ENDS
